@@ -129,7 +129,7 @@ function views_views_data() {
     }
 
     // Execute the views controller for each entity type.
-    if (isset($entity_info['views_controller_class'])) {
+    if (isset($entity_info['controllers']['views'])) {
       /** @var $views_controller \Drupal\views\EntityViewsControllerInterface */
       $views_controller = \Drupal::entityManager()->getController($entity_type, 'views');
       $data += $views_controller->viewsData();

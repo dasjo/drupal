@@ -23,7 +23,8 @@ use Drupal\user\UserInterface;
  *   label = @Translation("File"),
  *   controllers = {
  *     "storage" = "Drupal\file\FileStorageController",
- *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder"
+ *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "views" = "Drupal\file\FileEntityViewsController"
  *   },
  *   base_table = "file_managed",
  *   entity_keys = {
@@ -265,7 +266,7 @@ class File extends ContentEntityBase implements FileInterface {
     );
     $properties['timestamp'] = array(
       'label' => t('Created'),
-      'description' => t('The time that the node was created.'),
+      'description' => t('The time that the file was created.'),
       'type' => 'integer_field',
     );
     return $properties;
