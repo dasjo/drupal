@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityStorageControllerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\TypedData\TypedDataManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -50,11 +51,18 @@ class EntityViewsController implements EntityControllerInterface {
   protected $moduleHandler;
 
   /**
-   * The translation manager
+   * The translation manager.
    *
    * @var \Drupal\Core\StringTranslation\TranslationInterface
    */
   protected $translationManager;
+
+  /**
+   * The typed data manager.
+   *
+   * @var \Drupal\Core\TypedData\TypedDataManager
+   */
+  protected $typedDataManager;
 
   /**
    * Constructs an EntityViewsController object.
@@ -71,13 +79,14 @@ class EntityViewsController implements EntityControllerInterface {
    * @param \Drupal\Core\StringTranslation\TranslationInterface $translation_manager
    *   The translation manager.
    */
-  function __construct($entity_type, array $entity_info, EntityStorageControllerInterface $storage_controller, EntityManagerInterface $entity_manager, ModuleHandlerInterface $module_handler, TranslationInterface $translation_manager) {
+  function __construct($entity_type, array $entity_info, EntityStorageControllerInterface $storage_controller, EntityManagerInterface $entity_manager, ModuleHandlerInterface $module_handler, TranslationInterface $translation_manager, TypedDataManager $typed_data_manager) {
     $this->entityType = $entity_type;
     $this->entityInfo = $entity_info;
     $this->entityManager = $entity_manager;
     $this->storageController = $storage_controller;
     $this->moduleHandler = $module_handler;
     $this->translationManager = $translation_manager;
+    $this->typedDataManager = $typed_data_manager;
   }
 
   /**
@@ -90,7 +99,8 @@ class EntityViewsController implements EntityControllerInterface {
       $container->get('entity.manager')->getStorageController($entity_type),
       $container->get('entity.manager'),
       $container->get('module_handler'),
-      $container->get('string_translation')
+      $container->get('string_translation'),
+      $container->get('typed_data')
     );
   }
 
@@ -167,6 +177,8 @@ class EntityViewsController implements EntityControllerInterface {
           //   handlers. Maybe the data types should define it with fallback to
           //   standard or views should have the same naming scheme.
           $views_field = $this->mapTypedDataToHandlerId($field_definitions[$field_name], $views_field);
+
+
         }
       }
     }
@@ -186,38 +198,50 @@ class EntityViewsController implements EntityControllerInterface {
    *   The modified views data field definition.
    */
   protected function mapTypedDataToHandlerId($typed_data, $views_field) {
-    switch ($typed_data['type']) {
-      case 'integer_field':
+
+    $instance = $this->typedDataManager->createInstance($typed_data['type'], $typed_data);
+    if ($typed_data['list']) {
+      $instance = $instance[0];
+    }
+    $propertyDefinitions = $instance->getPropertyDefinitions();
+    $value_type = $propertyDefinitions['value']['type'];
+
+    if (empty($value_type)) {
+      $value_type = 'entity_reference';
+    }
+
+    switch ($value_type) {
+      case 'integer':
         $views_field['field']['id'] = 'numeric';
         $views_field['argument']['id'] = 'numeric';
         $views_field['filter']['id'] = 'numeric';
         $views_field['sort']['id'] = 'standard';
         break;
-      case 'string_field':
+      case 'string':
         $views_field['field']['id'] = 'standard';
         $views_field['argument']['id'] = 'string';
         $views_field['filter']['id'] = 'string';
         $views_field['sort']['id'] = 'standard';
         break;
-      case 'language_field':
+      case 'language':
         $views_field['field']['id'] = 'language';
         $views_field['argument']['id'] = 'language';
         $views_field['filter']['id'] = 'language';
         $views_field['sort']['id'] = 'standard';
         break;
-      case 'boolean_field':
+      case 'boolean':
         $views_field['field']['id'] = 'boolean';
         $views_field['argument']['id'] = 'numeric';
         $views_field['filter']['id'] = 'boolean';
         $views_field['sort']['id'] = 'standard';
         break;
-      case 'uuid_field':
+      case 'uuid':
         $views_field['field']['id'] = 'standard';
         $views_field['argument']['id'] = 'string';
         $views_field['filter']['id'] = 'string';
         $views_field['sort']['id'] = 'standard';
         break;
-      case 'entity_reference_field':
+      case 'entity_reference':
         // @todo No idea to determine how to find out whether the field is a number/string ID.
         // @todo Should the actual field handler respect that this is just renders a number
         // @todo Create an optional entity field handler, that can render the
