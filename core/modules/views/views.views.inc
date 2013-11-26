@@ -112,8 +112,9 @@ function views_views_data() {
     ),
   );
 
+
   // Registers an entity area handler per entity type.
-  foreach (entity_get_info() as $entity_type => $entity_info) {
+  foreach (\Drupal::entityManager()->getDefinitions() as $entity_type => $entity_info) {
     // Exclude entity types, which cannot be rendered.
     if (!empty($entity_info['controllers']['view_builder'])) {
       $label = $entity_info['label'];
@@ -125,6 +126,13 @@ function views_views_data() {
           'id' => 'entity',
         ),
       );
+    }
+
+    // Execute the views controller for each entity type.
+    if (isset($entity_info['views_controller_class'])) {
+      /** @var $views_controller \Drupal\views\EntityViewsControllerInterface */
+      $views_controller = \Drupal::entityManager()->getController($entity_type, 'views');
+      $data += $views_controller->viewsData();
     }
   }
 

@@ -262,17 +262,9 @@ class EntityManager extends PluginManagerBase implements EntityManagerInterface 
   }
 
   /**
-   * Creates a new controller instance.
-   *
-   * @param string $entity_type
-   *   The entity type for this access controller.
-   * @param string $controller_type
-   *   The controller type to create an instance for.
-   *
-   * @return mixed.
-   *   A controller instance.
+   * {@inhertidoc}
    */
-  protected function getController($entity_type, $controller_type) {
+  public function getController($entity_type, $controller_type) {
     if (!isset($this->controllers[$controller_type][$entity_type])) {
       $class = $this->getControllerClass($entity_type, $controller_type);
       if (in_array('Drupal\Core\Entity\EntityControllerInterface', class_implements($class))) {

@@ -53,6 +53,19 @@ interface EntityManagerInterface extends PluginManagerInterface {
   public function getFieldDefinitions($entity_type, $bundle = NULL);
 
   /**
+   * Creates a new controller instance.
+   *
+   * @param string $entity_type
+   *   The entity type for this access controller.
+   * @param string $controller_type
+   *   The controller type to create an instance for.
+   *
+   * @return mixed.
+   *   A controller instance.
+   */
+  public function getController($entity_type, $controller_type);
+
+  /**
    * Creates a new access controller instance.
    *
    * @param string $entity_type
