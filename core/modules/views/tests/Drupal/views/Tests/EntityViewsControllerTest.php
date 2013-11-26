@@ -68,6 +68,14 @@ class EntityViewsControllerTest extends UnitTestCase {
    */
   protected $viewsController;
 
+  public static function getInfo() {
+    return array(
+      'name' => 'Entity views controller test',
+      'description' => 'Tests code of the entity views controller plugin.',
+      'group' => 'Views Plugins',
+    );
+  }
+
   protected function setUp() {
     $this->entityStorage = $this->getMockBuilder('Drupal\Core\Entity\DatabaseStorageController')
       ->disableOriginalConstructor()
